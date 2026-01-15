@@ -9,84 +9,81 @@ export default function AllBox() {
   const [editId, setEditId] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
 
-  // Dark mode ni localStorage dan o'qish
+  /* ===== Dark mode ===== */
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode') === 'true'
     setDarkMode(savedMode)
   }, [])
-useEffect(() => {
-  const savedTodos = localStorage.getItem('todos')
-  if (savedTodos) {
-    setTodos(JSON.parse(savedTodos))
-  }
-}, [])
-useEffect(() => {
-  localStorage.setItem('todos', JSON.stringify(todos))
-}, [todos])
 
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode)
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    document.documentElement.classList.toggle('dark', darkMode)
   }, [darkMode])
 
+  /* ===== Todos localStorage ===== */
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos')
+    if (savedTodos) setTodos(JSON.parse(savedTodos))
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
+
+  /* ===== Functions ===== */
   const addTodo = () => {
     if (!text.trim()) return
 
     if (editId) {
-      setTodos(todos.map(todo =>
-        todo.id === editId ? { ...todo, title: text } : todo
+      setTodos(todos.map(t =>
+        t.id === editId ? { ...t, title: text } : t
       ))
       setEditId(null)
     } else {
-      setTodos([
-        { id: Date.now(), title: text, completed: false },
-        ...todos,
-      ])
+      setTodos([{ id: Date.now(), title: text, completed: false }, ...todos])
     }
     setText('')
   }
 
-  const removeTodo = (id) => setTodos(todos.filter(todo => todo.id !== id))
+  const removeTodo = id => setTodos(todos.filter(t => t.id !== id))
 
-  const editTodo = (todo) => {
+  const editTodo = todo => {
     setText(todo.title)
     setEditId(todo.id)
   }
 
-  const toggleTodo = (id) => {
-    setTodos(todos.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  const toggleTodo = id => {
+    setTodos(todos.map(t =>
+      t.id === id ? { ...t, completed: !t.completed } : t
     ))
   }
 
-  const filteredTodos = todos.filter(todo => {
-    if (filter === '2') return todo.completed
-    if (filter === '3') return !todo.completed
+  const filteredTodos = todos.filter(t => {
+    if (filter === '2') return t.completed
+    if (filter === '3') return !t.completed
     return true
   })
 
+  /* ===== UI ===== */
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-950' : 'bg-gray-50'} transition-colors duration-300`}>
-      <div className="max-w-2xl mx-auto pt-12 pb-20 px-4 sm:px-6">
-        {/* Header + Dark mode toggle */}
-        <div className="flex items-center justify-between mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+    <div className={`min-h-screen transition-colors ${darkMode ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
             Todo App
           </h1>
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="p-3 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:scale-110 transition-transform"
+            className="p-3 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:scale-110 transition"
           >
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
         </div>
 
-        {/* Filter buttons */}
-        <div className="flex justify-center gap-3 mb-8 flex-wrap">
+        {/* Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
           {[
             { id: '1', label: 'Barchasi' },
             { id: '2', label: 'Bajarilgan' },
@@ -95,85 +92,84 @@ useEffect(() => {
             <button
               key={btn.id}
               onClick={() => setFilter(btn.id)}
-              className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 shadow-sm
+              className={`px-5 py-2 rounded-full text-sm font-medium transition
                 ${filter === btn.id
-                  ? 'bg-indigo-600 text-white shadow-indigo-500/30'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'}
+              `}
             >
               {btn.label}
             </button>
           ))}
         </div>
 
-        {/* Input + Button */}
-        <div className="flex gap-3 mb-10">
+        {/* Input */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-10">
           <input
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTodo()}
             placeholder="Bugun nima qilmoqchisiz?"
-            className="flex-1 px-5 py-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 
-                     text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+            className="flex-1 px-4 py-3 sm:py-4 rounded-xl border dark:border-gray-700
+              bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+              focus:ring-2 focus:ring-indigo-500 outline-none"
           />
           <button
             onClick={addTodo}
-            className="px-6 py-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl 
-                     font-medium flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30"
+            className="px-6 py-3 sm:py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700
+              text-white flex items-center justify-center gap-2 transition"
           >
             <FaPlus />
             {editId ? 'Saqlash' : 'Qo‘shish'}
           </button>
         </div>
 
-        {/* Todo list */}
+        {/* Todo List */}
         <div className="space-y-4">
           {filteredTodos.map(todo => (
             <div
               key={todo.id}
-              className={`group flex items-center justify-between p-5 rounded-xl border border-gray-200 dark:border-gray-700 
-                        bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200
-                        ${todo.completed ? 'opacity-80' : ''}`}
+              className={`flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between
+                p-4 sm:p-5 rounded-xl border dark:border-gray-700
+                bg-white dark:bg-gray-800 transition
+                ${todo.completed ? 'opacity-80' : ''}`}
             >
               <div
                 onClick={() => toggleTodo(todo.id)}
                 className="flex items-center gap-4 cursor-pointer flex-1"
               >
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
-                  ${todo.completed
-                    ? 'bg-green-500 border-green-500 text-white'
-                    : 'border-gray-400 dark:border-gray-500 group-hover:border-indigo-400'
-                  }`}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center
+                  ${todo.completed ? 'bg-green-500 border-green-500 text-white' : 'border-gray-400'}`}
                 >
-                  {todo.completed && <FaCheck className="w-4 h-4" />}
+                  {todo.completed && <FaCheck size={14} />}
                 </div>
-                <span className={`text-lg ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                <span className={`text-base sm:text-lg
+                  ${todo.completed ? 'line-through text-gray-500' : ''}`}>
                   {todo.title}
                 </span>
               </div>
 
-              <div className="flex items-center gap-4 opacity-70 group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-4 justify-end">
                 <button
                   onClick={() => editTodo(todo)}
-                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+                  className="text-indigo-600 hover:text-indigo-800"
                 >
-                  <FaEdit size={20} />
+                  <FaEdit size={18} />
                 </button>
                 <button
                   onClick={() => removeTodo(todo.id)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
+                  className="text-red-600 hover:text-red-800"
                 >
-                  <FaTrash size={20} />
+                  <FaTrash size={18} />
                 </button>
               </div>
             </div>
           ))}
 
           {filteredTodos.length === 0 && (
-            <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-              <p className="text-2xl mb-2">Hozircha vazifa yo‘q 😴</p>
-              <p className="text-sm">Yangi vazifani yuqoridan qo‘shib boshlang</p>
+            <div className="text-center py-16 text-gray-400">
+              <p className="text-xl">Hozircha vazifa yo‘q 😴</p>
+              <p className="text-sm">Yangi vazifa qo‘shing</p>
             </div>
           )}
         </div>
